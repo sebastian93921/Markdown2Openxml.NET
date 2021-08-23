@@ -16,7 +16,7 @@ body.Append(MarkdownToOpenxmlUtil.markdownToParagraph(mainPart, markdownString))
 For more details, please refer to the Example
 https://github.com/sebastian93921/Markdown2Openxml.NET/blob/main/MarkdownTest/UnitTest1.cs
 
-There is a Code block syntax highlighting method `SimpleSyntaxHighlightUtil.ParselineToHtml` used for Markdig which looks as same as the generated document.
+There is a Code block syntax highlighting method `SimpleSyntaxHighlightUtil.ParselineToHtml` used for Markdig which the keyword highlights as same as the generated document.
 Please look into **Custom Rendering** https://github.com/xoofx/markdig/issues/344 to see how to implement it
 
 # Pack the library
