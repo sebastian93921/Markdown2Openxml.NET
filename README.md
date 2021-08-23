@@ -3,7 +3,7 @@ Convert Markdown string to Openxml format for Word Document
 
 ![Preview](preview.png)
 
-# Usage of the report
+# Usage of the library
 Get the library through nuget
 ```
 dotnet add package Markdown2Openxml
@@ -18,6 +18,12 @@ https://github.com/sebastian93921/Markdown2Openxml.NET/blob/main/MarkdownTest/Un
 
 There is a Code block syntax highlighting method `SimpleSyntaxHighlightUtil.ParselineToHtml` used for Markdig which looks as same as the generated document.
 Please look into **Custom Rendering** https://github.com/xoofx/markdig/issues/344 to see how to implement it
+
+# Pack the library
+Run the following command in project directory
+```
+dotnet pack
+```
 
 # Currently the library supports the following format:
 ## Heading
