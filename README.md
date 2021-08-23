@@ -1,6 +1,8 @@
 # Markdown2Openxml.NET
 Convert Markdown string to Openxml format for Word Document
 
+![Preview](preview.png)
+
 # Usage of the report
 Get the library through nuget
 ```
