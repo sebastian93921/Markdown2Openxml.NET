@@ -44,7 +44,9 @@ dotnet pack
 ```
 
 ## Inline code
-norm**al `text` as**d
+```
+norm**al `text`, no** problem
+```
 
 ## Code Block
 ```
