@@ -4,6 +4,9 @@ using Markdown2Openxml;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Diagnostics;
+using System;
+using System.Collections.Generic;
 
 namespace MarkdownTest
 {
@@ -16,13 +19,16 @@ namespace MarkdownTest
             string markdownString = @"
 ## h2 Heading
 ### h3 Heading
+norm**al `text` as**d
 ```
 var foo = function (bar) {
   return bar++;
 };
 
 console.log(foo(5));
-```";
+```
+normal text2
+";
             string filepath = @"test.docx";
             using (MemoryStream mem = new MemoryStream())
             {
@@ -34,7 +40,14 @@ console.log(foo(5));
 
                     mainPart.Document = new Document();
                     Body body = mainPart.Document.AppendChild(new Body());
-                    body.Append(MarkdownToOpenxmlUtil.markdownToParagraph(mainPart, markdownString));
+                    IList<OpenXmlCompositeElement> paragraphs = MarkdownToOpenxmlUtil.markdownToParagraph(mainPart, markdownString);
+                    body.Append(paragraphs);
+
+                    // Debug...
+                    foreach (var item in paragraphs)
+                    {
+                        Console.WriteLine(item + " " + item.InnerText);
+                    }
                     
                     mainPart.Document.Save();
                 }

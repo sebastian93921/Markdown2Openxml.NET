@@ -19,7 +19,7 @@ namespace Markdown2Openxml.RunProcessor
     public class ProcessRunTextService
     {   
         private Regex linkRegex = new Regex(@"(\[[a-zA-Z0-9\:\/\.\,\?\\\*-_# ]+\])(\([a-zA-Z0-9\:\/\.\,\?\\\*\-_#]+\))");
-
+        private Boolean isInlineCode = false;
 
         private void addTextToCurrentRun(MainDocumentPart mainDocumentPart, int index, SortedDictionary<int, Run> runs, StringBuilder stringBuilder, RunProperties runProperties){
             if(stringBuilder.Length == 0)return;
@@ -31,7 +31,7 @@ namespace Markdown2Openxml.RunProcessor
 
             // Check links, if splitLinks more than normal one, there are some links
             string[] splitLinks = linkRegex.Split(results);
-            if(splitLinks.Length > 1){
+            if(!isInlineCode && splitLinks.Length > 1){
                 //Link handling
                 int splitIndex = index;
                 for(int i = 0 ; i < splitLinks.Length; i++){
@@ -99,7 +99,6 @@ namespace Markdown2Openxml.RunProcessor
                     runs.Add(splitIndex, linkRun);
                 }
             }else{
-
                 Text text = new Text(results);
                 text.Space = SpaceProcessingModeValues.Preserve;
 
@@ -129,7 +128,7 @@ namespace Markdown2Openxml.RunProcessor
              * Handle logic:
              * 
              * Find the starter (S* / *) records, after found ender (*S / *), 
-             * reset all settings and process again
+             * reset all settings and process again. 'S' for space.
              * 
              *      | <------------------------------------------------ |
              *     S*    S*    S    S**        S    **S*    **    **    *
@@ -163,7 +162,9 @@ namespace Markdown2Openxml.RunProcessor
                         }
                         else
                         {
-                            //Reset the result and process again
+                            //Reset the result and process again (since ** is being added at the start)
+                            // we need to delete the ** but to delete **, we need to remove the text 
+                            // that leads to the start of **
                             List<int> toRemove = runs.Where(p => p.Key > boldStartPos + 1)
                             .Select(p => p.Key)
                             .ToList();
@@ -173,6 +174,9 @@ namespace Markdown2Openxml.RunProcessor
                             }
 
                             i = boldStartPos + 1;
+
+                            // Bold is a OnOffType (OpenXML will process it like a switch.)
+                            // eg. "<bold> ... <bold>" -> "<bold> ... </bold>" (on ... off)
                             currentStatus.Add(RunPattern.Bold);
                             stringBuilder.Clear();
                             continue;
@@ -206,6 +210,26 @@ namespace Markdown2Openxml.RunProcessor
                     runProperties = new RunProperties();
 
                     italicsStartPos = i;
+                }else if(ch == '`'){
+                    // self-contained parsing (ie. i += n)
+                    // add the stuff behind ` to paragraph
+                    addTextToCurrentRun(mainDocumentPart, i, runs, stringBuilder, runProperties);
+                    stringBuilder = stringBuilder.Clear();
+                    runProperties = new RunProperties();
+                    previousStatus.Clear();
+
+                    // look ahead (bypasses "Styling" part)
+                    isInlineCode = true;
+                    int pairLocation = msg.IndexOf('`', i+1);
+                    if(pairLocation != -1 && msg[pairLocation-1] != '\\'){
+                        string inlineCodeText = msg.Substring(i+1, pairLocation-i-1);
+                        RunProperties inlineCodeStyle = new RunProperties();
+                        inlineCodeStyle.Append(new Highlight(){ Val = new EnumValue<HighlightColorValues>(HighlightColorValues.LightGray)});
+                        addTextToCurrentRun(mainDocumentPart, i+1, runs, stringBuilder.Append(inlineCodeText), inlineCodeStyle);
+                        i += pairLocation - i;
+                        stringBuilder.Clear();
+                        continue;
+                    }
                 }
 
                 //Styling
