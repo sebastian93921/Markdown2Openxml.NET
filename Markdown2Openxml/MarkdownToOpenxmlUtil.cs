@@ -73,8 +73,12 @@ namespace Markdown2Openxml
                 return paragraphs;
             }
 
+            string newLineCharacter = "\n";
+            if(markdownString.Contains("\r\n")){
+                newLineCharacter = "\r\n";
+            }
             StringArrayReader stringArrayReader = new StringArrayReader(markdownString.Split(
-                new[] { Environment.NewLine },
+                new[] { newLineCharacter },
                 StringSplitOptions.None
             ));
 
