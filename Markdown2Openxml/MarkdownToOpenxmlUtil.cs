@@ -108,8 +108,8 @@ namespace Markdown2Openxml
             return paragraphs;
         }
 
+        // Normal String handling
         public static string ParagraphLineConcat(string firstLine, StringArrayReader stringArrayReader){
-            // Normal String handling
             string paragraphString = firstLine;
             if(!String.IsNullOrEmpty(firstLine)){
                 while (!stringArrayReader.endOfLine())

@@ -43,6 +43,11 @@ dotnet pack
 *Italic*
 ```
 
+## Inline code
+```
+norm**al `text`, no** problem
+```
+
 ## Code Block
 ```
 \\```

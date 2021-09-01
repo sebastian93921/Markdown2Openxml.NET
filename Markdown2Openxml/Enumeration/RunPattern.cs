@@ -4,6 +4,8 @@ namespace Markdown2Openxml.Enumeration
     public enum RunPattern
     {
         Bold,
-        Italic
+        Italic,
+
+        INLINE_CODE
     }
 }
