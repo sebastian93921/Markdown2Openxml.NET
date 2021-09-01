@@ -224,7 +224,8 @@ namespace Markdown2Openxml.RunProcessor
                     if(pairLocation != -1 && msg[pairLocation-1] != '\\'){
                         string inlineCodeText = msg.Substring(i+1, pairLocation-i-1);
                         RunProperties inlineCodeStyle = new RunProperties();
-                        inlineCodeStyle.Append(new Highlight(){ Val = new EnumValue<HighlightColorValues>(HighlightColorValues.LightGray)});
+                        inlineCodeStyle.Append(new FontSize(){ Val = "20" });
+                        inlineCodeStyle.Append(new Color() { Val = "808080" });
                         addTextToCurrentRun(mainDocumentPart, i+1, runs, stringBuilder.Append(inlineCodeText), inlineCodeStyle);
                         i += pairLocation - i;
                         stringBuilder.Clear();
