@@ -33,11 +33,11 @@ namespace Markdown2Openxml
 
         public static Drawing convertMarkdownImageToRunElement(MainDocumentPart mainDocumentPart, string markdownString)
         {
-            string imageBase64String = Regex.Replace(markdownString, @"\!\[(.+?)\]\(", "");
-            if (imageBase64String.StartsWith("data:image")){
+            string imageSyntaxString = Regex.Replace(markdownString, @"\!\[(.+?)\]\(", "");
+            if (imageSyntaxString.StartsWith("data:image")){
 
-                imageBase64String = imageBase64String.Remove(imageBase64String.Length - 1, 1);
-                string[] splitImageB64String = imageBase64String.Split(";");
+                imageSyntaxString = imageSyntaxString.Remove(imageSyntaxString.Length - 1, 1);
+                string[] splitImageB64String = imageSyntaxString.Split(";");
                 string datatype = splitImageB64String[0];
                 string imageString = splitImageB64String[1].Replace("base64,","");
                 byte[] imageByte = System.Convert.FromBase64String(imageString);
@@ -57,66 +57,89 @@ namespace Markdown2Openxml
                         return null;
                 }
 
-                ImagePart imagePart = mainDocumentPart.AddImagePart(imagePartType);
-                MemoryStream M = new MemoryStream(imageByte);
-                imagePart.FeedData(M);
+                return addToDocument(mainDocumentPart, imagePartType, imageByte);
+            }else if (imageSyntaxString.StartsWith("http://") || imageSyntaxString.StartsWith("https://")){
+                imageSyntaxString = imageSyntaxString.Remove(imageSyntaxString.Length - 1, 1);
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead(imageSyntaxString);
 
-                ImageSize imageSize = determineSize(imagePartType, new MemoryStream(imageByte));
-
-                long imageX = 990000L;
-                long imageY = 792000L;
-                if(imageSize != null){
-                    Console.WriteLine("Original Image Size: "+imageSize.Width+"/"+imageSize.Height);
-                    // Image actual size in px
-                    double imageRatio = (double)imageSize.Height / imageSize.Width;
-
-                    // Resize (Convert actual px to Emus)
-                    imageX = (long)(EmuPerPixel * (AvailableWidth / DocumentSizePerPixel));
-                    imageY = (long)(imageRatio * imageX);
-                    Console.WriteLine("Calculated Image Size: "+imageX+"/"+imageY);
+                ImagePartType imagePartType;
+                if(imageSyntaxString.EndsWith(".png")){
+                    imagePartType = ImagePartType.Png;
+                }else if(imageSyntaxString.EndsWith(".jpg") || imageSyntaxString.EndsWith(".jpeg")){
+                    imagePartType = ImagePartType.Jpeg;
+                }else{
+                    return null;
                 }
 
-                // Define the reference of the image.
-                Drawing element =
-                    new Drawing(
-                        new DW.Inline(
-                            new DW.Extent() { Cx = imageX, Cy = imageY },
-                            new DW.EffectExtent() { LeftEdge = 0L, TopEdge = 0L, 
-                                RightEdge = 0L, BottomEdge = 0L },
-                            new DW.DocProperties() { Id = docId++, 
-                                Name = "Image"+docId },
-                            new DW.NonVisualGraphicFrameDrawingProperties(
-                                new A.GraphicFrameLocks() { NoChangeAspect = true }),
-                            new A.Graphic(
-                                new A.GraphicData(
-                                    new PIC.Picture(
-                                        new PIC.NonVisualPictureProperties(
-                                            new PIC.NonVisualDrawingProperties() 
-                                            { Id = docId, 
-                                                Name = "Image"+docId },
-                                            new PIC.NonVisualPictureDrawingProperties()),
-                                        new PIC.BlipFill(
-                                            new A.Blip(){
-                                                Embed = mainDocumentPart.GetIdOfPart(imagePart), 
-                                                CompressionState = 
-                                                A.BlipCompressionValues.Print },
-                                            new A.Stretch(
-                                                new A.FillRectangle())),
-                                        new PIC.ShapeProperties(
-                                            new A.Transform2D(
-                                                new A.Offset() { X = 0L, Y = 0L },
-                                                new A.Extents() { Cx = imageX, Cy = imageY }),
-                                            new A.PresetGeometry(
-                                                new A.AdjustValueList()
-                                            ) { Preset = A.ShapeTypeValues.Rectangle }))
-                                ) { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
-                        ) { DistanceFromTop = (UInt32Value)0U, 
-                            DistanceFromBottom = (UInt32Value)0U, 
-                            DistanceFromLeft = (UInt32Value)0U, 
-                            DistanceFromRight = (UInt32Value)0U });
-                return element;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    stream.CopyTo(ms);
+                    return addToDocument(mainDocumentPart, imagePartType, ms.ToArray());
+                }
             }
             return null;
+        }
+
+        private static Drawing addToDocument(MainDocumentPart mainDocumentPart, ImagePartType imagePartType, byte[] imageByte){
+            ImagePart imagePart = mainDocumentPart.AddImagePart(imagePartType);
+            MemoryStream M = new MemoryStream(imageByte);
+            imagePart.FeedData(M);
+
+            ImageSize imageSize = determineSize(imagePartType, new MemoryStream(imageByte));
+
+            long imageX = 990000L;
+            long imageY = 792000L;
+            if(imageSize != null){
+                Console.WriteLine("Original Image Size: "+imageSize.Width+"/"+imageSize.Height);
+                // Image actual size in px
+                double imageRatio = (double)imageSize.Height / imageSize.Width;
+
+                // Resize (Convert actual px to Emus)
+                imageX = (long)(EmuPerPixel * (AvailableWidth / DocumentSizePerPixel));
+                imageY = (long)(imageRatio * imageX);
+                Console.WriteLine("Calculated Image Size: "+imageX+"/"+imageY);
+            }
+
+            // Define the reference of the image.
+            Drawing element =
+                new Drawing(
+                    new DW.Inline(
+                        new DW.Extent() { Cx = imageX, Cy = imageY },
+                        new DW.EffectExtent() { LeftEdge = 0L, TopEdge = 0L, 
+                            RightEdge = 0L, BottomEdge = 0L },
+                        new DW.DocProperties() { Id = docId++, 
+                            Name = "Image"+docId },
+                        new DW.NonVisualGraphicFrameDrawingProperties(
+                            new A.GraphicFrameLocks() { NoChangeAspect = true }),
+                        new A.Graphic(
+                            new A.GraphicData(
+                                new PIC.Picture(
+                                    new PIC.NonVisualPictureProperties(
+                                        new PIC.NonVisualDrawingProperties() 
+                                        { Id = docId, 
+                                            Name = "Image"+docId },
+                                        new PIC.NonVisualPictureDrawingProperties()),
+                                    new PIC.BlipFill(
+                                        new A.Blip(){
+                                            Embed = mainDocumentPart.GetIdOfPart(imagePart), 
+                                            CompressionState = 
+                                            A.BlipCompressionValues.Print },
+                                        new A.Stretch(
+                                            new A.FillRectangle())),
+                                    new PIC.ShapeProperties(
+                                        new A.Transform2D(
+                                            new A.Offset() { X = 0L, Y = 0L },
+                                            new A.Extents() { Cx = imageX, Cy = imageY }),
+                                        new A.PresetGeometry(
+                                            new A.AdjustValueList()
+                                        ) { Preset = A.ShapeTypeValues.Rectangle }))
+                            ) { Uri = "http://schemas.openxmlformats.org/drawingml/2006/picture" })
+                    ) { DistanceFromTop = (UInt32Value)0U, 
+                        DistanceFromBottom = (UInt32Value)0U, 
+                        DistanceFromLeft = (UInt32Value)0U, 
+                        DistanceFromRight = (UInt32Value)0U });
+            return element;
         }
 
 

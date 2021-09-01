@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Markdown2Openxml</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>Sebastian Ko</Authors>
     <Company>Sebastian Ko</Company>
     <TargetFramework>net5.0</TargetFramework>
