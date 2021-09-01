@@ -45,7 +45,7 @@ dotnet pack
 
 ## Inline code
 ```
-norm**al `text`, no** problem
+`Inline code`
 ```
 
 ## Code Block
