@@ -19,7 +19,7 @@ namespace MarkdownTest
             string markdownString = @"
 ## h2 Heading
 ### h3 Heading
-norm**al `text`, no**problem
+norm**al `this is inline_code()`, no**problem
 ```
 var foo = function (bar) {
   return bar++;
