@@ -27,6 +27,11 @@ var foo = function (bar) {
 
 console.log(foo(5));
 ```
+
+![Base64 image](data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==)
+
+![Image attachment](https://cdn.pixabay.com/index/2021/08/24/12-14-41-390_1440x550.jpg)
+
 normal text2
 ";
             string filepath = @"test.docx";
