@@ -118,10 +118,12 @@ namespace Markdown2Openxml
                     string nextLineString = stringArrayReader.nextLineString();
                     if (nextLineString != null && 
                         MarkdownPatternProcessor.getParagraphPattern(nextLineString) == ParagraphPattern.None && 
-                        !String.IsNullOrWhiteSpace(nextLineString.Trim()))
+                        !String.IsNullOrWhiteSpace(nextLineString.Trim()) && 
+                        !paragraphString.EndsWith("  "))
                     {
                         paragraphString += nextLineString;
                     }else{
+                        paragraphString = paragraphString.Trim();
                         break;
                     }
 
