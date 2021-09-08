@@ -33,6 +33,12 @@ console.log(foo(5));
 ![Image attachment](https://cdn.pixabay.com/index/2021/08/24/12-14-41-390_1440x550.jpg)
 
 normal text2
+
+new line  
+test
+
+second new line 
+test
 ";
             string filepath = @"test.docx";
             using (MemoryStream mem = new MemoryStream())
